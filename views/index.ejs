@@ -379,7 +379,7 @@ $('#endDate').val(endDate);
 var chart1, chart2
 
 
-async function fetchData(destory) {
+async function fetchData2(destory) {
   if (destory === true) {
         chart1.destroy();
         chart2.destroy();
@@ -459,7 +459,7 @@ async function fetchData(destory) {
   var ctx1 = document.getElementById("chart1").getContext("2d");
   var ctx2 = document.getElementById("chart2").getContext("2d");
 
-  fetchData();
+  fetchData2();
 
   $("#updatebtn").click(function() {
         // Perform your desired action here
@@ -467,7 +467,7 @@ async function fetchData(destory) {
          startDate = $("#startDate").val();
          endDate = $("#endDate").val();
 
-         fetchData(true);
+         fetchData2(true);
 
 
     });
