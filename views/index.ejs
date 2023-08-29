@@ -1,1 +1,480 @@
-<div>Hello</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Six Gauge Charts</title>
+  <script src="https://code.jscharting.com/latest/jscharting.js"></script>
+  <script type="text/javascript" src="https://code.jscharting.com/latest/modules/types.js"></script>
+  <script type="text/javascript" src="https://code.jscharting.com/latest/modules/toolbar.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+
+ <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+
+
+</div>
+  <div class="logocont"><img class="logo" src="/logo.png" alt=""></div>
+  <div class="cont">
+    <div>
+  <div class="row">
+    <div class="chartDiv" id="chartDiv1"></div>
+    <div class="chartDiv" id="chartDiv2"></div>
+    <div class="chartDiv" id="chartDiv3"></div>
+  </div>
+  <div class="row">
+    <div class="chartDiv" id="chartDiv4"></div>
+    <div class="chartDiv" id="chartDiv5"></div>
+    <div class="chartDiv" id="chartDiv6"></div>
+  </div>
+</div>
+<div class="graph" style="width: 50%;">
+  <div class="graphhead">
+      <div class="title">History charts: </div>
+  <div style="margin-bottom: 10px;">
+    <div class="dates" >
+    <div class="col-lg-3 col-sm-6" style="min-width: 220px;">
+      <label for="startDate">Start: </label>
+      <input id="startDate" class="form-control" type="date" />
+  </div>
+  <div class="col-lg-3 col-sm-6" style="min-width: 220px;">
+    <label for="startDate">End: </label>
+    <input id="endDate" class="form-control" type="date" />
+</div>
+<div>
+  <button id="updatebtn" style="    height: 34px;  " type="button" class="btn btn-primary">Update ⟲</button>
+
+</div>
+</div>
+
+</div>
+</div>
+    <canvas id="chart1"></canvas>
+</div>
+
+<div class="graph" style="width: 50%;">
+  <div class="ch2">
+      
+
+</div>
+    <canvas class="ch2" id="chart2"></canvas>
+</div>
+
+
+  <style>
+    .dates {
+      display: flex;
+    align-items: flex-end;
+    }
+    .ch2 {
+      margin-top: -50px;
+    }
+    .title {
+      font-size: 3rem;
+      font-weight: 600;
+      margin-left: 2px;
+      margin-bottom: -2px;
+    }
+    .graphhead {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      flex-direction: row;
+      align-items: center;
+    }
+    .graph {
+      display: flex;
+    width: 50%;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 70px;
+    margin-bottom: 100px;
+    }
+    #chart1 {
+      padding-top: 20px;
+    }
+    .cont {
+        display: flex;
+        display: flex;
+    flex-direction: column;
+    align-items: center;
+    }
+    .row {
+      margin-bottom: 20px; /* Add spacing between rows */
+    }
+
+    .chartDiv {
+      max-width: 530px;
+      height: 220px;
+      
+      
+      display: inline-block;
+      vertical-align: top;
+      box-sizing: border-box;
+    }
+    .logo {
+        width: 400px;
+    }
+    .logocont {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-block: 70px;
+    }
+   
+  </style>
+
+  <script>
+    async function fetchData() {
+  try {
+    const response = await fetch('/values?type=last');
+    const data = await response.json();
+
+    if (Array.isArray(data) && data.length > 0) {
+     
+      const rawData = data[0].data.replace(/^"(.*)"$/, "$1");
+      
+
+      console.log(rawData)
+
+      const parsedData = {};
+      rawData.split(":").forEach(section => {
+        const [sectionType, ...values] = section.split(",");
+        parsedData[sectionType] = values.map(parseFloat);
+      });
+      console.log(parsedData)
+      
+      
+      
+
+      return {
+        temperature: parsedData.T,
+        humidity: parsedData.H
+      };
+    } else {
+      throw new Error('No data available.');
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return null;
+  }
+}
+    function createGaugeChart(chartDivId, index) {
+      var chart = JSC.chart(chartDivId, {
+        debug: true,
+        type: 'gauge',
+        width: '100%',
+        height: 250,
+        animation_duration: 1000,
+        legend_visible: false,
+        xAxis: { spacingPercentage: 0.25 },
+        yAxis: {
+          defaultTick: {
+            padding: 10,
+            label_style_fontSize: '14px'
+          },
+          line: {
+            width: 9,
+            color: 'smartPalette',
+            breaks_gap: 0.06
+          },
+          scale_range: [0, 100]
+        },
+        palette: {
+          pointValue: '{%value/100}',
+          colors: ['green', 'yellow', 'red']
+        },
+        defaultTooltip_enabled: false,
+        defaultSeries: {
+          angle: { sweep: 180 },
+          shape: {
+            innerSize: '70%',
+            label: {
+              text:
+                '<span color="%color">{%sum:n1}</span><br/><span color="#696969" fontSize="20px">°C</span>',
+              style_fontSize: '46px',
+              verticalAlign: 'middle'
+            }
+          }
+        },
+        series: [
+          {
+            type: 'column roundcaps',
+            points: [{ id: '1', x: 'speed', y: 0 }]
+          }
+        ]
+      });
+
+      var INTERVAL_ID;
+
+      playPause();
+
+      function setGauge(max, y) {
+        chart
+          .series(0)
+          .options({
+            points: [{ id: '1', x: 'speed', y: y }]
+          });
+      }
+
+      function playPause(val) {
+        if (val) {
+          clearInterval(INTERVAL_ID);
+        } else {
+          update();
+        }
+      }
+
+       function update() {
+        fetchData().then(result => {
+            if (result) {
+              var a = result
+              console.log(a)
+                setGauge(100, result.temperature[index]);
+                
+                console.log('Temperature:', result.temperature);
+                console.log('Humidity:', result.humidity);
+            }
+            })
+        INTERVAL_ID = setInterval(function() {
+            fetchData().then(result => {
+            if (result) {
+              var a = result
+              console.log(a)
+                setGauge(100, result.temperature[index]);
+                
+                console.log('Temperature:', result.temperature);
+                console.log('Humidity:', result.humidity);
+            }
+            });
+          
+          
+        }, 30000);
+      }
+    }
+    function createGaugeChart2(chartDivId, index) {
+        var chart = JSC.chart(chartDivId, {
+        debug: true,
+        type: 'gauge',
+        width: '100%',
+        height: 250,
+        animation_duration: 1000,
+        legend_visible: false,
+        xAxis: { spacingPercentage: 0.25 },
+        yAxis: {
+          defaultTick: {
+            padding: 10,
+            label_style_fontSize: '14px'
+          },
+          line: {
+            width: 9,
+            color: 'smartPalette',
+            breaks_gap: 0.06
+          },
+          scale_range: [0, 100]
+        },
+        palette: {
+          pointValue: '{%value/100}',
+          colors: ['green', 'yellow', 'red']
+        },
+        defaultTooltip_enabled: false,
+        defaultSeries: {
+          angle: { sweep: 180 },
+          shape: {
+            innerSize: '70%',
+            label: {
+              text:
+                '<span color="%color">{%sum:n1}</span><br/><span color="#696969" fontSize="20px">%</span>',
+              style_fontSize: '46px',
+              verticalAlign: 'middle'
+            }
+          }
+        },
+        series: [
+          {
+            type: 'column roundcaps',
+            points: [{ id: '1', x: 'speed', y: 0 }]
+          }
+        ]
+      });
+
+      var INTERVAL_ID;
+
+      playPause();
+
+      function setGauge(max, y) {
+        chart
+          .series(0)
+          .options({
+            points: [{ id: '1', x: 'speed', y: y }]
+          });
+      }
+
+      function playPause(val) {
+        if (val) {
+          clearInterval(INTERVAL_ID);
+        } else {
+          update();
+        }
+      }
+
+      function update() {
+        fetchData().then(result => {
+            if (result) {
+              var a = result
+              console.log(a)
+                setGauge(100, result.humidity[index]);
+                
+                console.log('Temperature:', result.temperature);
+                console.log('Humidity:', result.humidity);
+            }
+            })
+        INTERVAL_ID = setInterval(function() {
+            fetchData().then(result => {
+            if (result) {
+              var a = result
+              console.log(a)
+                setGauge(100, result.humidity[index]);
+                
+                
+            }
+            });
+          
+          
+        }, 30000);
+      }
+    }
+
+    // Call the function to create each of the six gauge charts
+    createGaugeChart('chartDiv1', 0);
+    createGaugeChart('chartDiv2', 1);
+    createGaugeChart('chartDiv3', 2);
+    createGaugeChart2('chartDiv4', 0);
+    createGaugeChart2('chartDiv5', 1);
+    createGaugeChart2('chartDiv6', 2);
+  </script>
+
+<script>
+  var data1 = [];
+  var data2 = [];
+  // Sample data for the charts
+
+const endpoint = '/values';
+const type = 'custom';
+var startDate = new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0];
+var endDate = new Date().toISOString().split('T')[0];
+
+$('#startDate').val(startDate);
+$('#endDate').val(endDate);
+
+var chart1, chart2
+
+
+async function fetchData(destory) {
+  if (destory === true) {
+        chart1.destroy();
+        chart2.destroy();
+    }
+    const queryParams = new URLSearchParams({
+    type: type,
+    startDate: startDate,
+    endDate: endDate
+  });
+
+  const url = `${endpoint}?${queryParams}`;
+  try {
+    
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Network response was not ok: ${response.status}`);
+    }
+
+    const data = await response.json();
+    // Handle the JSON response data here
+    console.log(data);
+    data1 = data.averagedTValues
+    data2 = data.averagedHValues
+
+    
+    
+    var labels = []
+    for (let i = 1; i <= data.averagedTValues.length; i++) {
+      labels.push(`P${i}`);
+    }
+
+    var labels2 = []
+    for (let i = 1; i <= data.averagedHValues.length; i++) {
+      labels2.push(`P${i}`);
+    }
+    
+    
+
+     chart1 = new Chart(ctx1, {
+      type: "line",
+      data: {
+          labels: labels,
+          datasets: [
+              {
+                  label: "Temperature [°C]",
+                  data: data1,
+                  borderColor: "red",
+                  backgroundColor: "rgba(255, 0, 0, 0.2)"
+              }
+          ]
+      }
+  });
+   chart2 = new Chart(ctx2, {
+      type: "line",
+      data: {
+          labels: labels2,
+          datasets: [
+              {
+                  label: "Humidity [%]",
+                  data: data2,
+                  borderColor: "blue",
+                  backgroundColor: "rgba(0, 0, 255, 0.4)"
+              }
+          ]
+      }
+  });
+  
+  } catch (error) {
+    // Handle errors here
+    console.error('Fetch error:', error);
+  }
+}
+  
+
+  // Create the first chart
+  var ctx1 = document.getElementById("chart1").getContext("2d");
+  var ctx2 = document.getElementById("chart2").getContext("2d");
+
+  fetchData();
+
+  $("#updatebtn").click(function() {
+        // Perform your desired action here
+          
+         startDate = $("#startDate").val();
+         endDate = $("#endDate").val();
+
+         fetchData(true);
+
+
+    });
+
+
+  
+
+</script>
+</body>
+</html>
